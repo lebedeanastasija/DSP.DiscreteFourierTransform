@@ -3,7 +3,7 @@ let colors = ["red", "brown", "blue", "purple", "yellow", "orange", "gray", "gre
     "gray", "green", "crimson", "lavender", "indigo", "moccasin", "orchid", "plum", "silver", "tan"];
 
 let svgContainer,
-    svgWidth = 1100,
+    svgWidth = 3900,
     svgHeight = 700,
     svgMargin = {
         top: 20,
@@ -15,7 +15,7 @@ let svgContainer,
         x: svgMargin.left*2,
         y: Math.round((svgMargin.top + svgHeight)/2)
     },
-    xAxisLength = 1050,
+    xAxisLength = 3850,
     yAxisLength = 650,
     scale = 30;
 
@@ -29,6 +29,10 @@ let signalVector = [];
 let signalWithPhaseVector = [];
 let fourierParams = [];
 let fourierWithPhaseParams = [];
+
+let amplitudes = [1, 3, 5, 8, 10, 12, 16];
+let phases = [Math.PI / 6, Math.PI / 4, Math.PI /3, Math.PI / 2, 3* Math.PI / 4, Math.PI];
+let polyharmonicVector = [];
 
 
 function init() {
@@ -51,11 +55,13 @@ function task1() {
     let phaseSignal = getHarmonicSignalVector(phase, A, N, N, f);
     signalVector.push(signal);
     signalWithPhaseVector.push(phaseSignal);
+
+    fourierParams = [];
     for(let i = 0; i < N / 2; i++) {
         let fourierParam = getDiscreteFourier(i, signalVector[0], N);
-        let fourierWithPhaseParam = getDiscreteFourier(i, signalVector[0], N);
+        //let fourierWithPhaseParam = getDiscreteFourier(i, signalVector[0], N);
         fourierParams.push(fourierParam);
-        fourierWithPhaseParams.push(fourierWithPhaseParam);
+        //fourierWithPhaseParams.push(fourierWithPhaseParam);
     }
     debugger;
     drawFunctionGraph(signal, colors[5], 1, scale, 1);
@@ -85,10 +91,42 @@ function task4() {
 
 function task5() {
     clearSvgContainer(svgContainer);
-    drawAxes(xAxisLength, yAxisLength, startPoint, scale, 1);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale / 30, 3);
+    let polyharmonicSignal = polyharmonicSignalVector(phases, amplitudes, 30, N, N * 3, 1);
+    polyharmonicVector.push(polyharmonicSignal);
 
-    /*drawFunctionGraph([], colors[6], 1, scale, 1);*/
-    /*drawFunctionGraph([], colors[3], 1);*/
+    fourierParams = [];
+    for(let i = 0; i < N / 2; i++) {
+        let fourierParam = getDiscreteFourier(i, polyharmonicSignal, N);
+        fourierParams.push(fourierParam);
+    }
+    drawFunctionGraph(polyharmonicSignal, colors[13], 3, scale / 30, 3);
+}
+
+function task6() {
+    clearSvgContainer(svgContainer);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale / 3, scale);
+    for(let i = 1; i < N/2; i++) {
+        drawFunctionGraph([ {x: i, y: 0}, {x: i, y: fourierParams[i].y}], colors[10], 1, scale / 3, scale);
+    }
+}
+
+function task7() {
+    debugger;
+    clearSvgContainer(svgContainer);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale * 6, scale);
+    for(let i = 1; i < N/2; i++) {
+        drawFunctionGraph([{x: i, y: 0}, {x: i, y: fourierParams[i].phi}], colors[10], 1, scale * 6, scale);
+    }
+}
+
+function task8() {
+    clearSvgContainer(svgContainer);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale / 50, 3);
+    let rebuiltWithPhase = getRebuiltPolyharmonicSignalVector(fourierParams, N, N * 3, 1);
+    let rebuilt = getRebuiltPolyharmonicSignalVector(fourierParams, N, N * 3, 0);
+    drawFunctionGraph(rebuiltWithPhase, colors[13], 3, scale / 50, 3);
+    drawFunctionGraph(rebuilt, colors[2], 1, scale / 50, 3);
 }
 
 function getHarmonicSignalVector(initPhase, amplitude, period, count, oscillation) {
@@ -104,7 +142,7 @@ function harmonicSignal(initPhase, amplitude, period, oscillation, n) {
     //A = 10
     //initPhase = 0
     //oscillation = 1
-    return amplitude * Math.cos((2 * Math.PI * oscillation * n) / period + initPhase);
+    return amplitude * Math.cos((2 * Math.PI * oscillation * n) / period - initPhase);
 }
 
 function getRebuiltSignalVector(fourierInfo, period, count) {
@@ -128,15 +166,55 @@ function rebuiltSignal(fourierInfo, period, n) {
     return result;
 }
 
-function getDiscreteFourier(harmonicNumber, signalVector, size) {
+function polyharmonicSignalVector(initPhases, amplitudes, harmonicsNumber, period, count, oscillation) {
+    let result = [];
+    for(let n = 0; n < count; n++) {
+        let y = 0;
+        for (let k = 0; k < harmonicsNumber; k++) {
+            let paseIndex = Math.round(Math.random() * (initPhases.length-1));
+            let amplitudeIndex = Math.round(Math.random() * (amplitudes.length-1));
+            y += harmonicSignal(initPhases[paseIndex], amplitudes[amplitudeIndex], period, k, n);
+        }
+        result.push({y: y, x: n})
+    }
+    return result;
+}
+
+function getRebuiltPolyharmonicSignalVector(fourierInfo, period, count, withPhase) {
+    let result = [];
+    debugger;
+    for(let n = 0; n < count; n++) {
+        let y = rebuiltPolyharmonicSignal(fourierInfo, N, n, withPhase);
+        result.push({y: y, x: n});
+    }
+    return result;
+}
+
+//param withPhase  - equal to 1 or 0
+function rebuiltPolyharmonicSignal(fourierInfo, period, n, withPhase) {
+    let result = 0;
+    fourierInfo.forEach((info, harmonicNumber) => {
+        if(harmonicNumber !== 0) {
+            let temp = info.y * Math.cos(2 * Math.PI * harmonicNumber * n / period - info.phi * withPhase);
+            if(!isNaN(temp)) {
+                result += temp;
+            }
+        } else {
+            result += info.y / 2;
+        }
+    });
+    return result;
+}
+
+function getDiscreteFourier(harmonicNumber, signalVector, period) {
     let result = {};
     let aSin = 0;
     let aCos = 0;
     let a;
     let phi;
     signalVector.forEach((s, i) => {
-        aSin += s.y * TSIN[(i * harmonicNumber)% size];
-        aCos += s.y * TSIN[(i * harmonicNumber + size / 4)% size];
+        aSin += s.y * TSIN[(i * harmonicNumber)% period];
+        aCos += s.y * TSIN[(i * harmonicNumber + period / 4)% period];
     });
     aSin = aSin * (2 / N);
     aCos = aCos * (2 / N);
