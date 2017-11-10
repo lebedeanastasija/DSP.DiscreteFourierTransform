@@ -12,7 +12,7 @@ let svgContainer,
         left: 50
     },
     startPoint = {
-        x: svgMargin.left,
+        x: svgMargin.left*2,
         y: Math.round((svgMargin.top + svgHeight)/2)
     },
     xAxisLength = 1050,
@@ -59,28 +59,28 @@ function task1() {
     }
     debugger;
     drawFunctionGraph(signal, colors[5], 1, scale, 1);
-    drawFunctionGraph(phaseSignal, colors[5], 1, scale, 1);
+    //drawFunctionGraph(phaseSignal, colors[5], 3, scale, 1);
 }
 
 function task2() {
     clearSvgContainer(svgContainer);
     drawAxes(xAxisLength, yAxisLength, startPoint, scale, scale);
-    drawFunctionGraph([ {x: f, y: 0}, {x: f, y: fourierParams[0].y}], colors[10], 1, scale, scale);
+    drawFunctionGraph([ {x: f, y: 0}, {x: f, y: fourierParams[1].y}], colors[10], 1, scale, scale);
 }
 
 function task3() {
     debugger;
     clearSvgContainer(svgContainer);
-    drawAxes(xAxisLength, yAxisLength, startPoint, scale * 1000, scale);
-    drawFunctionGraph([{x: f, y: 0}, {x: f, y: fourierParams[0].phi}], colors[10], 1, scale * 1000, scale);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale * 1000000000000000, scale);
+    drawFunctionGraph([{x: f, y: 0}, {x: f, y: fourierParams[1].phi}], colors[10], 1, scale * 1000000000000000, scale);
 }
 
 function task4() {
     clearSvgContainer(svgContainer);
     drawAxes(xAxisLength, yAxisLength, startPoint, scale, 1);
     let rebuilt = getRebuiltSignalVector(fourierParams, N, N);
-    debugger;
-    drawFunctionGraph(rebuilt, colors[8], 1, scale, 1);
+    drawFunctionGraph(signalVector[0], colors[5], 6, scale, 1);
+    drawFunctionGraph(rebuilt, colors[2], 1, scale, 1);
 }
 
 function task5() {
@@ -121,7 +121,6 @@ function rebuiltSignal(fourierInfo, period, n) {
     let result = 0;
     fourierInfo.forEach((info, harmonicNumber) => {
         let temp = info.y * Math.cos(2 * Math.PI * harmonicNumber * n / period - info.phi);
-        console.log(temp);
         if(!isNaN(temp)) {
             result += temp;
         }
@@ -131,7 +130,6 @@ function rebuiltSignal(fourierInfo, period, n) {
 
 function getDiscreteFourier(harmonicNumber, signalVector, size) {
     let result = {};
-    debugger;
     let aSin = 0;
     let aCos = 0;
     let a;
