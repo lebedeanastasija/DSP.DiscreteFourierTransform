@@ -1,6 +1,37 @@
-let colors = ["red", "brown", "blue", "purple", "yellow", "orange", "gray", "green", "crimson", "lavender", "indigo",
-    "moccasin", "orchid", "plum", "silver", "tan", "red", "brown", "blue", "purple", "yellow", "orange",
-    "gray", "green", "crimson", "lavender", "indigo", "moccasin", "orchid", "plum", "silver", "tan"];
+let colors = [
+    "red",
+    "brown",
+    "blue",
+    "purple",
+    "yellow",
+    "orange",
+    "gray",
+    "green",
+    "crimson",
+    "lavender",
+    "indigo",
+    "moccasin",
+    "orchid",
+    "plum",
+    "silver",
+    "tan",
+    "red",
+    "brown",
+    "blue",
+    "purple",
+    "yellow",
+    "orange",
+    "gray",
+    "green",
+    "crimson",
+    "lavender",
+    "indigo",
+    "moccasin",
+    "orchid",
+    "plum",
+    "silver",
+    "tan"
+];
 
 let svgContainer,
     svgWidth = 3900,
@@ -31,7 +62,7 @@ let fourierParams = [];
 let fourierWithPhaseParams = [];
 
 let amplitudes = [1, 3, 5, 8, 10, 12, 16];
-let phases = [Math.PI / 6, Math.PI / 4, Math.PI /3, Math.PI / 2, 3* Math.PI / 4, Math.PI];
+let phases = [Math.PI / 6, Math.PI / 4, Math.PI /3, Math.PI / 2, 3* Math.PI / 4];
 let polyharmonicVector = [];
 
 
@@ -125,8 +156,23 @@ function task8() {
     drawAxes(xAxisLength, yAxisLength, startPoint, scale / 50, 3);
     let rebuiltWithPhase = getRebuiltPolyharmonicSignalVector(fourierParams, N, N * 3, 1);
     let rebuilt = getRebuiltPolyharmonicSignalVector(fourierParams, N, N * 3, 0);
-    drawFunctionGraph(rebuiltWithPhase, colors[13], 3, scale / 50, 3);
+    drawFunctionGraph(rebuiltWithPhase, colors[10], 3, scale / 50, 3);
     drawFunctionGraph(rebuilt, colors[2], 1, scale / 50, 3);
+    drawFunctionGraph(polyharmonicVector[0], colors[5], 6, scale / 50, 3);
+}
+
+function task9() {
+    clearSvgContainer(svgContainer);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale / 50, 3);
+    let lowOscillationSignal = getLowRebuiltSignalVector(fourierParams, 10, N, N * 3, 0);
+    drawFunctionGraph(lowOscillationSignal, colors[2], 1, scale / 50, 3);
+}
+
+function task10() {
+    clearSvgContainer(svgContainer);
+    drawAxes(xAxisLength, yAxisLength, startPoint, scale / 50, 3);
+    let highOscillationSignal = getHighRebuiltSignalVector(fourierParams, 20, N, N * 3, 0);
+    drawFunctionGraph(highOscillationSignal, colors[2], 1, scale / 50, 3);
 }
 
 function getHarmonicSignalVector(initPhase, amplitude, period, count, oscillation) {
@@ -203,6 +249,60 @@ function rebuiltPolyharmonicSignal(fourierInfo, period, n, withPhase) {
             result += info.y / 2;
         }
     });
+    return result;
+}
+
+function lowOscillationPolyharmonicSignal(fourierInfo, oscillation, period, n, withPhase) {
+    let level = oscillation ? oscillation : 10;
+    let result = 0;
+    fourierInfo.forEach((info, harmonicNumber) => {
+        if(harmonicNumber > level) {
+            if(harmonicNumber !== 0) {
+                let temp = info.y * Math.cos(2 * Math.PI * harmonicNumber * n / period - info.phi * withPhase);
+                if(!isNaN(temp)) {
+                    result += temp;
+                }
+            } else {
+                result += info.y / 2;
+            }
+        }
+    });
+    return result;
+}
+
+function getLowRebuiltSignalVector(fourierInfo, oscillation, period, count, withPhase) {
+    let result = [];
+    for(let n = 0; n < count; n++) {
+        let y = lowOscillationPolyharmonicSignal(fourierInfo, oscillation, period, n, withPhase);
+        result.push({y: y, x: n});
+    }
+    return result;
+}
+
+function highOscillationPolyharmonicSignal(fourierInfo, oscillation, period, n, withPhase) {
+    let level = oscillation ? oscillation : 20;
+    let result = 0;
+    fourierInfo.forEach((info, harmonicNumber) => {
+        if(harmonicNumber < level) {
+            if(harmonicNumber !== 0) {
+                let temp = info.y * Math.cos(2 * Math.PI * harmonicNumber * n / period - info.phi * withPhase);
+                if(!isNaN(temp)) {
+                    result += temp;
+                }
+            } else {
+                result += info.y / 2;
+            }
+        }
+    });
+    return result;
+}
+
+function getHighRebuiltSignalVector(fourierInfo, oscillation, period, count, withPhase) {
+    let result = [];
+    for(let n = 0; n < count; n++) {
+        let y = highOscillationPolyharmonicSignal(fourierInfo, oscillation, period, n, withPhase);
+        result.push({y: y, x: n});
+    }
     return result;
 }
 
